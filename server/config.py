@@ -1,0 +1,5 @@
+ADMIN_LOGIN = 'admin'
+ADMIN_PASWWORD = 'admin'
+
+SECRET_KEY = 'change_this'
+ACCESS_TOKEN_EXPIRE_MINUTES = 1440
