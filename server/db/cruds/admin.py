@@ -22,8 +22,8 @@ async def get_admin_login(session: AsyncSession, admin_login: str):
 
 
 async def get_admin_id(session: AsyncSession, admin_id: int):
-    user = await session.execute(select(Admin).where(Admin.id == admin_id))
-    return user.scalars().first()
+    admin = await session.execute(select(Admin).where(Admin.id == admin_id))
+    return admin.scalars().one()
 
 
 async def set_active(session: AsyncSession, admin_id: int, is_active: bool):

